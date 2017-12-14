@@ -1,15 +1,22 @@
 import logging
+import uuid
 import base64
+import os
 
 # [START imports]
-from flask import Flask, render_template, request,  json
-#request.headers['Access-Control-Allow-Origin'] = "*"
+from flask import Flask, render_template, request, json
 # [END imports]
 
 # [START create_app]
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 # [END create_app]
+
+def saveImage(imageId, imageData):
+    os.mkdir('images')
+    with open("./images/{}.jpg".format(imageId), 'w+b') as selfie:
+        selfie.write(base64.decodebytes(imageData.split(',')[1].encode()))
+
 @app.after_request
 def after_request(response):
     response.headers.add('Access-Control-Allow-Origin', '*')
@@ -18,39 +25,44 @@ def after_request(response):
     response.headers.add('Access-Control-Allow-Credentials', 'true')
     return response
 
+def after_request(request):
+    logging.debug(request)
+
 @app.route('/info')
 def info():
-    print (request.method)
-    return 
+    return "/isWellKnownUser, /registerUnknownUser"
 
 @app.route('/isWellKnownUser', methods=['GET','POST'] )
 def isWellKnownUser():
-    print (request.headers)
+    imageId = request.form['imageId']
+    imageData = request.form['imageData']
+    #Save image
+    if (imageId == ''):
+        imageId = uuid.uuid4()
+    if (imageData != ''):
+        saveImage(imageId, imageData)
     response = app.response_class(
-        response=json.dumps("{isWellKnownUser:1}"),
+        response=json.dumps("{'isWellKnownUser':1,'username':'jdoe','status':1,'imageId':imageId}"),
         status=200,
         mimetype='application/json'
     )
     return response
 
-@app.route('/isWellKnownUserForm', methods=['GET','POST'] )
-def isWellKnownUserForm():
-    print (request.headers)
-    print (request.form)
-    print (request.form['selfie'])
-    with open("./selfie.jpg", 'w+b') as selfie:
-        selfie.write(base64.decodestring (request.form['selfie'].split(',')[1].encode()))
-    response = app.response_class(
-        response=json.dumps("{isWellKnownUser:1}"),
-        status=200,
-        mimetype='application/json'
-    )
-    return response
-
-@app.route('/registerUnknownUser')
+@app.route('/registerUnknownUser', methods=['GET','POST'] )
 def registerUnknownUser():
-    print (request)
-    return "registerUnknownUser"
+    imageId = request.form['imageId']
+    imageData = request.form['imageData']
+    #Save image
+    if (imageId == ''):
+        imageId = uuid.uuid4()
+    if (imageData != ''):
+        saveImage(imageId, imageData)
+    response = app.response_class(
+        response=json.dumps("{'isWellKnownUser':1,'username':'jdoe','status':1,'imageId':imageId}"),
+        status=200,
+        mimetype='application/json'
+    )
+    return response
 
 @app.errorhandler(500)
 def server_error(e):
@@ -58,4 +70,3 @@ def server_error(e):
     logging.exception('An error occurred during a request.')
     return 'An internal error occurred.', 500
 # [END app]
-
