@@ -28,10 +28,11 @@ def after_request(response):
 def after_request(request):
     logging.debug(request)
 
+'''
 @app.route('/')
 def info():
     return "/isWellKnownUser, /registerUnknownUser"
-
+'''
 @app.route('/isWellKnownUser', methods=['GET','POST'] )
 def isWellKnownUser():
     imageId = request.form['imageId']
