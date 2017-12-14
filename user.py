@@ -28,7 +28,7 @@ def after_request(response):
 def after_request(request):
     logging.debug(request)
 
-@app.route('/info')
+@app.route('/')
 def info():
     return "/isWellKnownUser, /registerUnknownUser"
 
